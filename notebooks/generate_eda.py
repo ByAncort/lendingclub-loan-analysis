@@ -826,14 +826,17 @@ model_features = ["loan_amnt", "term", "int_rate", "grade", "annual_inc",
     "acc_now_delinq", "mort_acc", "had_hardship", "purpose"]
 available = [c for c in model_features if c in df_acc.columns]
 missing_feats = [c for c in model_features if c not in df_acc.columns]
-df_model = df_acc[available + ["bad_loan"]].dropna()
+df_model = df_acc[available + ["bad_loan"]]
 print("PREPARACION DEL DATASET PARA MODELADO")
 print("=" * 55)
 print(f"Features seleccionadas: {len(available)}")
 print(f"Features no disponibles: {missing_feats if missing_feats else 'Ninguna'}")
-print(f"Filas resultantes: {df_model.shape[0]:,}")
+nan_rows = df_model.isnull().any(axis=1).sum()
+print(f"Filas totales: {df_model.shape[0]:,}")
+print(f"Filas con NaN: {nan_rows:,} ({(nan_rows/df_model.shape[0])*100:.1f}%)")
 print(f"Columnas: {df_model.shape[1] - 1} features + target")
 print(f"Tasa de default: {df_model['bad_loan'].mean()*100:.1f}%")
+print(f"Nota: No se eliminaron filas con NaN. Modelos como XGBoost manejan NaN nativamente.")
 print(f"\\nFeatures incluidas:")
 for f in available:
     dtype = "numerica" if df_acc[f].dtype in ["int64", "float64"] else "categorica"
