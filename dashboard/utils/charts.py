@@ -3,10 +3,28 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
+import os
 
 COLOR_GOOD = "#2ecc71"
 COLOR_BAD = "#e74c3c"
 COLOR_PRIMARY = "#3498db"
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+def _ensure_fred_columns(df):
+    if all(c in df.columns for c in ["unrate", "fed_funds", "cpi"]):
+        return df
+    fred_path = os.path.join(_BASE_DIR, "data", "external", "fred_indicators.csv")
+    if not os.path.exists(fred_path):
+        return df
+    fred = pd.read_csv(fred_path)
+    fred["date"] = pd.to_datetime(fred["date"])
+    fred["_ym"] = fred["date"].dt.to_period("M").astype(str)
+    df = df.copy()
+    df["_ym"] = df["issue_d"].dt.to_period("M").astype(str)
+    df = df.merge(fred[["_ym", "unrate", "fed_funds", "cpi"]], on="_ym", how="left")
+    df.drop(columns=["_ym"], inplace=True)
+    return df
 
 def kpi_card(val, label, prefix="", suffix="", fmt=",.0f"):
     fig = go.Figure()
@@ -227,13 +245,14 @@ def plot_state_map(df):
     return fig
 
 def plot_fred_indicators(df):
+    df = _ensure_fred_columns(df)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
-    monthly = df.set_index("issue_d").resample("ME").agg(
-        default_rate=("bad_loan", "mean"),
-        unrate=("unrate", "first"),
-        fed_funds=("fed_funds", "first"),
-        cpi=("cpi", "first"),
-    ).dropna()
+    monthly = df.set_index("issue_d").resample("ME").agg({
+    "bad_loan": "mean",
+    "unrate": "first",
+    "fed_funds": "first",
+    "cpi": "first",
+    }).rename(columns={"bad_loan": "default_rate"}).dropna()
     color_map = {"unrate": "#e74c3c", "fed_funds": "#f39c12", "cpi": "#2ecc71"}
     for col, color in color_map.items():
         fig.add_trace(go.Scatter(
@@ -254,6 +273,7 @@ def plot_fred_indicators(df):
     return fig
 
 def plot_fred_correlation(df):
+    df = _ensure_fred_columns(df)
     fred_cols = ["unrate", "fed_funds", "cpi"]
     corr_data = []
     for col in fred_cols:
