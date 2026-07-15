@@ -1,0 +1,14 @@
+services:
+  dashboard:
+    build: .
+    container_name: lendingclub-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data:ro
+      - ./models:/app/models:ro
+      - ./dashboard:/app/dashboard:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    restart: unless-stopped

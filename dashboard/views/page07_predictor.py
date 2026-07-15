@@ -4,7 +4,7 @@ import numpy as np
 from dashboard.utils.model_loader import load_model, load_metadata
 from dashboard.utils.data_loader import load_accepted
 
-FEATURE_DEFAULTS = {
+LOW_RISK_DEFAULTS = {
     "term": 36.0, "emp_length": 6.0, "annual_inc": 65000.0, "dti": 18.0,
     "delinq_2yrs": 0.0, "fico_range_low": 690.0, "inq_last_6mths": 0.0,
     "open_acc": 11.0, "pub_rec": 0.0, "revol_util": 50.0, "total_acc": 22.0,
@@ -35,6 +35,99 @@ FEATURE_DEFAULTS = {
     "deferral_term": 0.0, "settlement_status": 0.0,
     "settlement_amount": 0.0, "settlement_percentage": 0.0,
     "settlement_term": 0.0,
+    "fico_score": 692.0, "had_hardship": 0.0, "debt_settlement": 0.0,
+    "unrate": 5.0, "fed_funds": 0.5, "cpi": 240.0,
+    "acc_now_delinq": 0.0, "il_util": 30.0, "percent_bc_gt_75": 15.0,
+    "max_bal_bc": 5000.0, "tot_coll_amt": 0.0,
+    "total_rev_hi_lim": 30000.0, "total_bal_il": 5000.0,
+    "total_cu_tl": 2.0, "mths_since_last_major_derog": 60.0,
+    "mths_since_rcnt_il": 30.0, "inq_fi": 0.0, "inq_last_12m": 2.0,
+    "open_acc_6m": 1.0, "open_act_il": 2.0, "open_il_12m": 1.0,
+    "open_il_24m": 2.0, "all_util": 40.0,
+}
+
+MEDIUM_RISK_DEFAULTS = {
+    "term": 36.0, "emp_length": 4.0, "annual_inc": 45000.0, "dti": 28.0,
+    "delinq_2yrs": 1.0, "fico_range_low": 680.0, "inq_last_6mths": 3.0,
+    "open_acc": 14.0, "pub_rec": 0.0, "revol_util": 65.0, "total_acc": 25.0,
+    "acc_open_past_24mths": 5.0, "avg_cur_bal": 8000.0,
+    "bc_open_to_buy": 4000.0, "bc_util": 70.0, "chargeoff_within_12_mths": 0.0,
+    "delinq_amnt": 500.0, "mo_sin_old_il_acct": 50.0,
+    "mo_sin_old_rev_tl_op": 80.0, "mo_sin_rcnt_rev_tl_op": 8.0,
+    "mo_sin_rcnt_tl": 10.0, "mort_acc": 1.0, "mths_since_last_delinq": 18.0,
+    "mths_since_last_record": 36.0, "mths_since_recent_bc": 6.0,
+    "mths_since_recent_bc_dlq": 18.0, "mths_since_recent_inq": 4.0,
+    "mths_since_recent_revol_delinq": 18.0, "num_accts_ever_120_pd": 1.0,
+    "num_actv_bc_tl": 2.0, "num_actv_rev_tl": 5.0,
+    "num_bc_sats": 3.0, "num_bc_tl": 3.0, "num_il_tl": 5.0,
+    "num_op_rev_tl": 5.0, "num_rev_accts": 10.0, "num_rev_tl_bal_gt_0": 6.0,
+    "num_sats": 10.0, "num_tl_120dpd_2m": 0.0, "num_tl_30dpd": 1.0,
+    "num_tl_90g_dpd_24m": 0.0, "num_tl_op_past_12m": 5.0,
+    "pct_tl_nvr_dlq": 75.0, "pub_rec_bankruptcies": 0.0,
+    "tax_liens": 0.0, "tot_cur_bal": 15000.0, "tot_hi_cred_lim": 35000.0,
+    "total_bal_ex_mort": 12000.0, "total_bc_limit": 10000.0,
+    "total_il_high_credit_limit": 12000.0, "revol_bal": 12000.0,
+    "installment": 400.0, "funded_amnt": 15000.0, "funded_amnt_inv": 15000.0,
+    "fico_range_high": 684.0, "last_fico_range_high": 684.0,
+    "last_fico_range_low": 680.0, "collections_12_mths_ex_med": 1.0,
+    "debt_settlement_flag": 0.0, "hardship_flag": 0.0,
+    "hardship_length": 0.0, "hardship_dpd": 0.0,
+    "hardship_loan_status": 0.0, "hardship_payoff_balance_amount": 0.0,
+    "hardship_amount": 0.0, "disbursement_method": 0.0,
+    "deferral_term": 0.0, "settlement_status": 0.0,
+    "settlement_amount": 0.0, "settlement_percentage": 0.0,
+    "settlement_term": 0.0,
+    "fico_score": 680.0, "had_hardship": 0.0, "debt_settlement": 0.0,
+    "unrate": 6.0, "fed_funds": 1.0, "cpi": 238.0,
+    "acc_now_delinq": 0.0, "il_util": 55.0, "percent_bc_gt_75": 35.0,
+    "max_bal_bc": 7000.0, "tot_coll_amt": 500.0,
+    "total_rev_hi_lim": 20000.0, "total_bal_il": 3000.0,
+    "total_cu_tl": 1.0, "mths_since_last_major_derog": 24.0,
+    "mths_since_rcnt_il": 15.0, "inq_fi": 1.0, "inq_last_12m": 5.0,
+    "open_acc_6m": 2.0, "open_act_il": 1.0, "open_il_12m": 2.0,
+    "open_il_24m": 3.0, "all_util": 65.0,
+}
+
+HIGH_RISK_DEFAULTS = {
+    "term": 60.0, "emp_length": 1.0, "annual_inc": 25000.0, "dti": 38.0,
+    "delinq_2yrs": 4.0, "fico_range_low": 640.0, "inq_last_6mths": 8.0,
+    "open_acc": 20.0, "pub_rec": 1.0, "revol_util": 85.0, "total_acc": 30.0,
+    "acc_open_past_24mths": 8.0, "avg_cur_bal": 3000.0,
+    "bc_open_to_buy": 500.0, "bc_util": 85.0, "chargeoff_within_12_mths": 1.0,
+    "delinq_amnt": 2500.0, "mo_sin_old_il_acct": 20.0,
+    "mo_sin_old_rev_tl_op": 30.0, "mo_sin_rcnt_rev_tl_op": 4.0,
+    "mo_sin_rcnt_tl": 4.0, "mort_acc": 0.0, "mths_since_last_delinq": 3.0,
+    "mths_since_last_record": 12.0, "mths_since_recent_bc": 3.0,
+    "mths_since_recent_bc_dlq": 3.0, "mths_since_recent_inq": 2.0,
+    "mths_since_recent_revol_delinq": 3.0, "num_accts_ever_120_pd": 2.0,
+    "num_actv_bc_tl": 1.0, "num_actv_rev_tl": 4.0,
+    "num_bc_sats": 1.0, "num_bc_tl": 2.0, "num_il_tl": 4.0,
+    "num_op_rev_tl": 4.0, "num_rev_accts": 12.0, "num_rev_tl_bal_gt_0": 8.0,
+    "num_sats": 5.0, "num_tl_120dpd_2m": 1.0, "num_tl_30dpd": 3.0,
+    "num_tl_90g_dpd_24m": 1.0, "num_tl_op_past_12m": 8.0,
+    "pct_tl_nvr_dlq": 55.0, "pub_rec_bankruptcies": 1.0,
+    "tax_liens": 1.0, "tot_cur_bal": 5000.0, "tot_hi_cred_lim": 15000.0,
+    "total_bal_ex_mort": 5000.0, "total_bc_limit": 5000.0,
+    "total_il_high_credit_limit": 8000.0, "revol_bal": 15000.0,
+    "installment": 650.0, "funded_amnt": 25000.0, "funded_amnt_inv": 25000.0,
+    "fico_range_high": 644.0, "last_fico_range_high": 644.0,
+    "last_fico_range_low": 640.0, "collections_12_mths_ex_med": 2.0,
+    "debt_settlement_flag": 1.0, "hardship_flag": 1.0,
+    "hardship_length": 6.0, "hardship_dpd": 60.0,
+    "hardship_loan_status": 1.0, "hardship_payoff_balance_amount": 5000.0,
+    "hardship_amount": 500.0, "disbursement_method": 1.0,
+    "deferral_term": 3.0, "settlement_status": 1.0,
+    "settlement_amount": 2000.0, "settlement_percentage": 50.0,
+    "settlement_term": 12.0,
+    "fico_score": 620.0, "had_hardship": 1.0, "debt_settlement": 1.0,
+    "unrate": 9.5, "fed_funds": 0.15, "cpi": 215.0,
+    "acc_now_delinq": 2.0, "il_util": 85.0, "percent_bc_gt_75": 75.0,
+    "max_bal_bc": 12000.0, "tot_coll_amt": 5000.0,
+    "total_rev_hi_lim": 8000.0, "total_bal_il": 1000.0,
+    "total_cu_tl": 0.0, "mths_since_last_major_derog": 6.0,
+    "mths_since_rcnt_il": 8.0, "inq_fi": 2.0, "inq_last_12m": 10.0,
+    "open_acc_6m": 3.0, "open_act_il": 0.0, "open_il_12m": 3.0,
+    "open_il_24m": 4.0, "all_util": 85.0,
 }
 
 CATEGORICAL_DEFAULTS = {
@@ -91,9 +184,56 @@ _RANGES = {
     "funded_amnt": (1000, 40000), "funded_amnt_inv": (1000, 40000),
 }
 
-def _sample_to_df(form, sample_meta):
+def compute_risk_score(form):
+    score = 0
+    fico = form.get("fico_range_low", 690)
+    grade = form.get("grade", "C")
+    dti = form.get("dti", 18)
+    delinq = form.get("delinq_2yrs", 0)
+    revol = form.get("revol_util", 50)
+    inq = form.get("inq_last_6mths", 0)
+    emp = form.get("emp_length", 6)
+    inc = form.get("annual_inc", 65000)
+    term = form.get("term", 36)
+    home = form.get("home_ownership", "RENT")
+
+    if fico < 640: score += 4
+    elif fico < 660: score += 3
+    elif fico < 690: score += 1
+
+    grade_scores = {"A": -1, "B": 0, "C": 1, "D": 2, "E": 3, "F": 4, "G": 5}
+    score += grade_scores.get(grade, 1)
+
+    if dti > 40: score += 3
+    elif dti > 35: score += 2
+    elif dti > 30: score += 1
+
+    if delinq > 3: score += 3
+    elif delinq > 1: score += 2
+    elif delinq > 0: score += 1
+
+    if revol > 90: score += 2
+    elif revol > 75: score += 1
+
+    if inq > 8: score += 2
+    elif inq > 4: score += 1
+
+    if emp < 2: score += 2
+    elif emp < 4: score += 1
+
+    if inc < 30000: score += 2
+    elif inc < 45000: score += 1
+
+    if term == 60: score += 1
+    if home == "RENT": score += 1
+
+    return score
+
+def _sample_to_df(form, sample_meta, risk_level="low"):
+    defaults = {"low": LOW_RISK_DEFAULTS, "medium": MEDIUM_RISK_DEFAULTS, "high": HIGH_RISK_DEFAULTS}
+    base = defaults.get(risk_level, LOW_RISK_DEFAULTS)
     row = {}
-    for col, default in FEATURE_DEFAULTS.items():
+    for col, default in base.items():
         val = form.get(col, default)
         if val is None or (isinstance(val, (int, float)) and np.isnan(val)):
             val = default
@@ -160,6 +300,7 @@ def show():
             initial_list_status = st.selectbox("Listado inicial", ["f", "w"], index=0)
             addr_state = st.selectbox("Estado", STATES, index=0)
 
+        risk_alert = st.empty()
         submitted = st.form_submit_button("Predecir Riesgo", type="primary", use_container_width=True)
 
     if submitted:
@@ -178,8 +319,19 @@ def show():
             "addr_state": addr_state,
         }
 
+        risk_score = compute_risk_score(form_data)
+        if risk_score >= 8:
+            risk_level = "high"
+            risk_alert.error(f"Perfil de ALTO RIESGO (score: {risk_score})")
+        elif risk_score >= 4:
+            risk_level = "medium"
+            risk_alert.warning(f"Perfil de RIESGO MEDIO (score: {risk_score})")
+        else:
+            risk_level = "low"
+            risk_alert.info(f"Perfil de BAJO RIESGO (score: {risk_score})")
+
         with st.spinner("Calculando probabilidad de default..."):
-            sample = _sample_to_df(form_data, {"debt_settlement_flag": 0.0, "hardship_flag": 0.0})
+            sample = _sample_to_df(form_data, {"debt_settlement_flag": 0.0, "hardship_flag": 0.0}, risk_level)
 
             expected_cols = model.feature_names_in_
             for col in expected_cols:
@@ -202,6 +354,10 @@ def show():
                 delta=f"{delta:+.1%} vs población",
                 delta_color="inverse",
             )
+
+        labels = {"low": "bajo", "medium": "medio", "high": "alto"}
+        st.caption(f"Defaults usados: perfil de riesgo **{labels[risk_level]}** (score {risk_score}). "
+                   f"Las variables no visibles se ajustaron automaticamente a valores consistentes con este perfil.")
 
         if pred_class == 1:
             st.error("**ALTO RIESGO** — El modelo clasifica este prestamo como potencial default.")

@@ -40,6 +40,7 @@ pages = [
     "05. Dificultad Financiera",
     "06. Salud del Pipeline",
     "07. Predicción de Default",
+    "08. Infraestructura Docker",
 ]
 
 page = st.sidebar.radio("Navegación", pages)
@@ -67,4 +68,7 @@ elif page == pages[5]:
     show()
 elif page == pages[6]:
     from views.page07_predictor import show
+    show()
+elif page == pages[7]:
+    from views.page08_docker import show
     show()
