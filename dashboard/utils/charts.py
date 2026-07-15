@@ -13,15 +13,15 @@ def kpi_card(val, label, prefix="", suffix="", fmt=",.0f"):
     fig.add_trace(go.Indicator(
         mode="number",
         value=val,
-        number={"font": {"size": 48}, "prefix": prefix, "suffix": suffix, "valueformat": fmt},
-        title={"text": label, "font": {"size": 16}},
+        number={"font": {"size": 48, "color": "#ffffff"}, "prefix": prefix, "suffix": suffix, "valueformat": fmt},
+        title={"text": label, "font": {"size": 16, "color": "#e0e0e0"}},
         domain={"x": [0, 1], "y": [0, 1]},
     ))
     fig.update_layout(
         height=160,
         margin=dict(l=10, r=10, t=30, b=10),
-        paper_bgcolor="rgba(0,0,0,0)",
-        font={"color": "#1a1a2e"},
+        paper_bgcolor="#1a1a2e",
+        font={"color": "#ffffff"},
     )
     return fig
 

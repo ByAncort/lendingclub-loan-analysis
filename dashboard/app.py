@@ -48,23 +48,23 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("*Proyecto Integrador - PCD*")
 
 if page == pages[0]:
-    from pages.page01_riesgo import show
+    from views.page01_riesgo import show
     show()
 elif page == pages[1]:
-    from pages.page02_pricing import show
+    from views.page02_pricing import show
     show()
 elif page == pages[2]:
-    from pages.page03_perfil import show
+    from views.page03_perfil import show
     show()
 elif page == pages[3]:
-    from pages.page04_rechazados import show
+    from views.page04_rechazados import show
     show()
 elif page == pages[4]:
-    from pages.page05_dificultad import show
+    from views.page05_dificultad import show
     show()
 elif page == pages[5]:
-    from pages.page06_pipeline import show
+    from views.page06_pipeline import show
     show()
 elif page == pages[6]:
-    from pages.page07_predictor import show
+    from views.page07_predictor import show
     show()
