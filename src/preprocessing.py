@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 RAW_DIR = "data/raw"
 PROCESSED_DIR = "data/processed"
 INTERIM_DIR = "data/interim"
-SAMPLE_SIZE = 5000
+EXTERNAL_DIR = "data/external"
+SAMPLE_SIZE = 20000
 
 TARGET_MAP = {
     "Fully Paid": 0,
@@ -37,8 +38,13 @@ DROP_COLS = [
     "hardship_loan_status",
 ]
 
+def _sample_name(n):
+    return f"{n // 1000}k" if n % 1000 == 0 else str(n)
+
 def load_accepted(sample=True):
-    path = os.path.join(INTERIM_DIR, "accepted_sample_5k.csv") if sample else os.path.join(RAW_DIR, "accepted_2007_to_2018Q4.csv")
+    fname = f"accepted_sample_{_sample_name(SAMPLE_SIZE)}.csv" if sample else "accepted_2007_to_2018Q4.csv"
+    base = INTERIM_DIR if sample else RAW_DIR
+    path = os.path.join(base, fname)
     logger.info(f"Loading accepted: {path}")
     df = pd.read_csv(path, low_memory=False)
     logger.info(f"Shape: {df.shape}")
@@ -166,6 +172,28 @@ def remove_leakage(df):
     logger.info(f"Dropped {len(all_drop)} leakage columns")
     return df
 
+def load_fred():
+    path = os.path.join(EXTERNAL_DIR, "fred_indicators.csv")
+    if not os.path.exists(path):
+        logger.warning("FRED indicators not found. Run scripts/fetch_fred.py first.")
+        return None
+    df = pd.read_csv(path)
+    df["year"] = df["year"].astype(int)
+    df["month"] = df["month"].astype(int)
+    logger.info(f"Loaded FRED indicators: {df.shape}")
+    return df
+
+def merge_fred(df, fred_df):
+    if fred_df is None:
+        return df
+    df["year"] = df["issue_d"].dt.year
+    df["month"] = df["issue_d"].dt.month
+    before = df.shape[1]
+    df = df.merge(fred_df[["year", "month", "unrate", "fed_funds", "cpi"]],
+                  on=["year", "month"], how="left")
+    logger.info(f"FRED columns added. Shape: {df.shape} (was {before} cols)")
+    return df
+
 def save_processed(df, name):
     os.makedirs(PROCESSED_DIR, exist_ok=True)
     path = os.path.join(PROCESSED_DIR, name)
@@ -181,6 +209,8 @@ def run_pipeline(sample=True):
     df_acc = load_accepted(sample)
     df_acc = preprocess_accepted(df_acc)
     df_acc = remove_leakage(df_acc)
+    fred_df = load_fred()
+    df_acc = merge_fred(df_acc, fred_df)
 
     df_rej = load_rejected(sample)
     df_rej = preprocess_rejected(df_rej)

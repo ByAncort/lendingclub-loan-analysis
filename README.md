@@ -13,6 +13,15 @@ Dashboard interactivo para monitorear riesgo de default en préstamos LendingClu
 pip install -r requirements.txt
 ```
 
+### API key FRED (datos macroeconomicos)
+
+El proyecto usa la API de la Reserva Federal (FRED) para enriquecer el dataset con:
+- Tasa de desempleo (`UNRATE`)
+- Tasa de interes de la Fed (`FEDFUNDS`)
+- Inflacion CPI (`CPIAUCSL`)
+
+La API key ya esta configurada en `scripts/fetch_fred.py`. Si deseas usar la tuya, registrate en https://fred.stlouisfed.org/docs/api/api_key.html
+
 ## Datos
 
 ### Dataset completo (raw)
@@ -39,7 +48,7 @@ Estas muestras se generan automaticamente si no existen al ejecutar el preproces
 ### Generar muestras manualmente
 
 ```bash
-python scripts/generate_samples.py -n 5000 --seed 42
+python scripts/generate_samples.py -n 20000 --seed 42
 ```
 
 Argumentos:
@@ -50,18 +59,35 @@ Argumentos:
 
 ## Pipeline completo
 
+### 0. Datos macroeconomicos (FRED API)
+
+El pipeline integra indicadores macroeconomicos via API de la Reserva Federal (FRED).
+
+```bash
+python scripts/fetch_fred.py
+```
+
+Descarga:
+- `UNRATE` — Tasa de desempleo
+- `FEDFUNDS` — Tasa de interes de la Fed
+- `CPIAUCSL` — Inflacion (CPI)
+
+Guarda `data/external/fred_indicators.csv` para ser mergeado por fecha en el ETL.
+
 ### 1. Preprocesamiento
 
-Procesa el archivo `accepted_sample_5k.csv` (sample) o `accepted_2007_to_2018Q4.csv` (full) y genera los CSVs limpios en `data/processed/`.
+Procesa el archivo `accepted_sample_{n}.csv` (sample) o `accepted_2007_to_2018Q4.csv` (full) y genera los CSVs limpios en `data/processed/`. Durante el ETL, mergea automaticamente los indicadores FRED por (year, month) de `issue_d`.
 
 ```bash
 python src/preprocessing.py
 ```
 
-Para usar el dataset completo en lugar del sample, cambiar `sample=True` a `sample=False` dentro de `run_pipeline()` en `src/preprocessing.py`.
+Configuracion en `src/preprocessing.py`:
+- `SAMPLE_SIZE = 20000` — tamano del sample (default)
+- `sample=True` en `run_pipeline()` — usar sample; cambiar a `False` para datos completos
 
 Output:
-- `data/processed/accepted_clean.csv` (~20.000 filas, 114 columnas)
+- `data/processed/accepted_clean.csv` (~20.000 filas, 118 columnas: 115 originales + unrate, fed_funds, cpi)
 - `data/processed/rejected_clean.csv`
 - `data/processed/combined_summary.csv`
 
@@ -71,10 +97,18 @@ Output:
 python scripts/train_model.py
 ```
 
-- Lee `data/processed/accepted_clean.csv`
+- Lee `data/processed/accepted_clean.csv` (incluye variables macroeconomicas)
 - Entrena pipeline XGBoost con preprocesamiento (imputacion + scaling + one-hot)
 - Guarda modelo en `models/xgboost_pipeline.pkl`
 - Guarda metricas en `models/model_metadata.json`
+
+**Comparativa de metricas:**
+
+| Metrica | Sin FRED | Con FRED | Mejora |
+|---------|----------|----------|--------|
+| AUC-ROC | 0.7320 | 0.7558 | +0.0238 |
+| Recall | 0.6501 | 0.6984 | +0.0483 |
+| F1 | 0.3529 | 0.3657 | +0.0128 |
 
 ### 3. Ejecutar dashboard
 
@@ -92,6 +126,7 @@ archive/
     raw/                  # CSV originales (no modificar)
     interim/              # Muestras generadas
     processed/            # Datos limpios listos para modelado
+    external/             # Datos de fuentes externas (FRED API)
   dashboard/
     app.py                # Entry point del dashboard
     views/                # Paginas del dashboard (7 secciones)

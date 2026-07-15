@@ -4,7 +4,6 @@
       "loan_amnt",
       "funded_amnt",
       "funded_amnt_inv",
-      "term",
       "int_rate",
       "installment",
       "emp_length",
@@ -81,9 +80,14 @@
       "fico_score",
       "had_hardship",
       "debt_settlement",
-      "had_delinquency"
+      "year",
+      "month",
+      "unrate",
+      "fed_funds",
+      "cpi"
     ],
     "cat": [
+      "term",
       "grade",
       "sub_grade",
       "home_ownership",
@@ -95,19 +99,19 @@
     ]
   },
   "metrics": {
-    "auc_roc": 0.7319681018656535,
-    "precision": 0.24222585924713586,
-    "recall": 0.6500732064421669,
-    "f1": 0.35294117647058826
+    "auc_roc": 0.7558218368525674,
+    "precision": 0.24766355140186916,
+    "recall": 0.698389458272328,
+    "f1": 0.36565733997700267
   },
   "scale_pos_weight": 6.313505607020965,
   "train_shape": [
     15000,
-    113
+    117
   ],
   "test_shape": [
     5000,
-    113
+    117
   ],
   "default_rate_train": 0.13673333333333335
 }
