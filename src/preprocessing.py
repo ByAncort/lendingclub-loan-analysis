@@ -51,7 +51,8 @@ def load_accepted(sample=True):
     return df
 
 def load_rejected(sample=True):
-    path = os.path.join(INTERIM_DIR, "rejected_sample_5k.csv") if sample else os.path.join(RAW_DIR, "rejected_2007_to_2018Q4.csv")
+    fname = f"rejected_sample_{_sample_name(SAMPLE_SIZE)}.csv" if sample else "rejected_2007_to_2018Q4.csv"
+    path = os.path.join(INTERIM_DIR, fname) if sample else os.path.join(RAW_DIR, fname)
     logger.info(f"Loading rejected: {path}")
     df = pd.read_csv(path, low_memory=False)
     logger.info(f"Shape: {df.shape}")
@@ -148,7 +149,7 @@ def preprocess_rejected(df):
     date_cols = [c for c in df.columns if "date" in c]
     for col in date_cols:
         if col in df.columns:
-            df[col] = pd.to_datetime(df[col], format="%m/%d/%Y", errors="coerce")
+            df[col] = pd.to_datetime(df[col], errors="coerce")
     if "amount_requested" in df.columns:
         df["amount_requested"] = parse_money(df["amount_requested"])
     target_dti_col = [c for c in df.columns if "debt" in c and "income" in c]
