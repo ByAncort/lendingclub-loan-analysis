@@ -86,8 +86,8 @@ def show():
     with c4:
         if HAS_PSUTIL:
             uptime_sec = time.time() - psutil.boot_time()
-            uptime_str = str(datetime.timedelta(seconds=int(uptime_sec)))
-            st.plotly_chart(kpi_card(uptime_str, "Uptime Sistema"), use_container_width=True)
+            uptime_hrs = uptime_sec / 3600
+            st.plotly_chart(kpi_card(uptime_hrs, "Uptime Sistema", fmt=".1f", suffix=" hrs"), use_container_width=True)
         else:
             st.metric("Uptime", "N/D")
 
@@ -136,7 +136,7 @@ def show():
         return f"background-color: {color}; color: white"
 
     st.dataframe(
-        df.style.applymap(color_exists, subset=["Existe"]),
+        df.style.map(color_exists, subset=["Existe"]),
         use_container_width=True,
         hide_index=True,
     )

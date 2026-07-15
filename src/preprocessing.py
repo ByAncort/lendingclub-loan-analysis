@@ -63,17 +63,17 @@ def clean_column_names(df):
     return df
 
 def parse_money(col):
-    if col.dtype == object:
+    if pd.api.types.is_string_dtype(col):
         return col.replace(r'[\$,]', '', regex=True).astype(float)
     return col
 
 def parse_percent(col):
-    if col.dtype == object:
+    if pd.api.types.is_string_dtype(col):
         return col.str.rstrip("%").astype(float) / 100
     return col
 
 def parse_term(col):
-    if col.dtype == object:
+    if pd.api.types.is_string_dtype(col):
         return col.str.extract(r"(\d+)", expand=False).astype(float)
     return col
 

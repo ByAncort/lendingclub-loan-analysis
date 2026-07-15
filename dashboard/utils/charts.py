@@ -84,7 +84,7 @@ def plot_heatmap_term_grade(df):
     df["term_label"] = df["term"].map({36: "36 meses", 60: "60 meses"})
     pivot = df.pivot_table(index="term_label", columns="grade", values="bad_loan",
                            aggfunc="mean", observed=False)
-    pivot = pivot[grade_order]
+    pivot = pivot.reindex(columns=grade_order)
     fig = px.imshow(pivot, text_auto=".1%", color_continuous_scale="RdYlGn_r",
                     aspect="auto", height=250,
                     labels={"x": "Grade", "y": "Plazo", "color": "Default Rate"})
@@ -105,6 +105,8 @@ def plot_hardship_by_grade(df):
     return fig
 
 def plot_delinquency_cross(df):
+    df = df.copy()
+    df["had_delinquency"] = (df["delinq_2yrs"] > 0).astype(int)
     cross = pd.crosstab(df["had_delinquency"], df["bad_loan"], normalize="index")
     cross.index = ["Sin delincuencia previa", "Con delincuencia previa"]
     cross.columns = ["Good (Paga)", "Bad (Default)"]

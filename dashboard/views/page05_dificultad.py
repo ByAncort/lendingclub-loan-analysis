@@ -11,6 +11,7 @@ def show():
     st.markdown("Análisis de programas de hardship, settlement y morosidad previa como señales de alerta temprana.")
 
     df = load_accepted()
+    df["had_delinquency"] = (df["delinq_2yrs"] > 0).astype(int)
 
     st.subheader("KPIs de Dificultad Financiera")
     c1, c2, c3, c4 = st.columns(4)
