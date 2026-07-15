@@ -9,6 +9,7 @@ funcion opera sobre que dataframe.
 
 import pandas as pd
 import numpy as np
+import os
 import logging
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -32,6 +33,36 @@ def _log_shape_change(fn_name, before, after):
     if lost > 0:
         pct = lost / before * 100 if before else 0
         log.info(f"[{fn_name}] Filas: {before} -> {after} ({lost} eliminadas, {pct:.2f}%)")
+
+
+# ---------------------------------------------------------------------
+# FRED (datos macroeconomicos)
+# ---------------------------------------------------------------------
+
+_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_EXTERNAL_DIR = os.path.join(_BASE_DIR, "data", "external")
+
+def _load_fred():
+    path = os.path.join(_EXTERNAL_DIR, "fred_indicators.csv")
+    if not os.path.exists(path):
+        log.warning(f"[FRED] Archivo no encontrado: {path}")
+        return None
+    fred = pd.read_csv(path)
+    fred["date"] = pd.to_datetime(fred["date"])
+    fred["_ym"] = fred["date"].dt.to_period("M").astype(str)
+    log.info(f"[FRED] Cargados {len(fred)} registros")
+    return fred
+
+def merge_fred_columns(df_acc, fred_df):
+    if fred_df is None:
+        return df_acc
+    df_acc = df_acc.copy()
+    df_acc["_ym"] = df_acc["issue_d"].dt.to_period("M").astype(str)
+    before = df_acc.shape[1]
+    df_acc = df_acc.merge(fred_df[["_ym", "unrate", "fed_funds", "cpi"]], on="_ym", how="left")
+    df_acc.drop(columns=["_ym"], inplace=True)
+    log.info(f"[merge_fred_columns] {df_acc.shape[1] - before} columnas FRED agregadas")
+    return df_acc
 
 
 # ---------------------------------------------------------------------
@@ -306,6 +337,8 @@ def clean_pipeline(df_acc, df_rej):
     df_acc = feature_engineering(df_acc)
     df_acc = handle_missing_values(df_acc)
     df_acc = drop_leakage_columns(df_acc)
+    fred_df = _load_fred()
+    df_acc = merge_fred_columns(df_acc, fred_df)
 
     df_rej = preprocess_rejected(df_rej)
 
