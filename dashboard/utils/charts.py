@@ -224,6 +224,42 @@ def plot_state_map(df):
     fig.update_layout(margin=dict(l=0, r=0, t=0, b=0))
     return fig
 
+def plot_fred_indicators(df):
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    monthly = df.set_index("issue_d").resample("ME").agg(
+        default_rate=("bad_loan", "mean"),
+        unrate=("unrate", "first"),
+        fed_funds=("fed_funds", "first"),
+        cpi=("cpi", "first"),
+    ).dropna()
+    color_map = {"unrate": "#e74c3c", "fed_funds": "#f39c12", "cpi": "#2ecc71"}
+    for col, color in color_map.items():
+        fig.add_trace(go.Scatter(
+            x=monthly.index, y=monthly[col], name=col,
+            mode="lines", line=dict(color=color, width=1.5, dash="dot"),
+        ), secondary_y=True)
+    fig.add_trace(go.Scatter(
+        x=monthly.index, y=monthly["default_rate"], name="Default Rate",
+        mode="lines+markers", line=dict(color=COLOR_BAD, width=2.5),
+        marker=dict(size=5),
+    ), secondary_y=False)
+    fig.update_layout(
+        title="Default Rate vs Indicadores Macroeconomicos",
+        height=400, hovermode="x unified",
+    )
+    fig.update_yaxes(title_text="Default Rate", secondary_y=False, tickformat=".1%")
+    fig.update_yaxes(title_text="Valor FRED", secondary_y=True)
+    return fig
+
+def plot_fred_correlation(df):
+    fred_cols = ["unrate", "fed_funds", "cpi"]
+    corr_data = []
+    for col in fred_cols:
+        if col in df.columns:
+            c = df[col].corr(df["bad_loan"])
+            corr_data.append({"Indicador": col.upper(), "Correlacion con Default": f"{c:+.4f}"})
+    return pd.DataFrame(corr_data)
+
 def plot_time_series(df, freq="ME"):
     freq_map = {"M": "ME", "Q": "QE", "Y": "YE"}
     freq = freq_map.get(freq, freq)

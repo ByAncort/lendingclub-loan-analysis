@@ -3,7 +3,7 @@ import pandas as pd
 from dashboard.utils.data_loader import load_accepted
 from dashboard.utils.charts import (
     kpi_card, plot_grade_default_rate, plot_fico_histogram,
-    plot_dti_boxplot, plot_time_series
+    plot_dti_boxplot, plot_time_series, plot_fred_indicators, plot_fred_correlation
 )
 
 def show():
@@ -57,3 +57,9 @@ def show():
         st.markdown("¿Cómo varía la tasa de default en el tiempo?")
         freq = st.radio("Frecuencia", ["M", "Q", "Y"], index=0, horizontal=True, key="ts_freq")
         st.plotly_chart(plot_time_series(df, freq=freq), use_container_width=True)
+
+    st.markdown("---")
+    st.subheader("Contexto Macroeconomico (FRED)")
+    st.markdown("Indicadores macroeconomicos integrados via API de la Reserva Federal: desempleo, tasa de interes de la Fed e inflacion.")
+    st.plotly_chart(plot_fred_indicators(df), use_container_width=True)
+    st.dataframe(plot_fred_correlation(df), use_container_width=True, hide_index=True)
